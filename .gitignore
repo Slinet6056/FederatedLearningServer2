@@ -3,6 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+!.gitkeep
 
 ### STS ###
 .apt_generated
@@ -31,3 +32,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Model ###
+src/main/resources/model/*.zip
+src/main/resources/stats/*

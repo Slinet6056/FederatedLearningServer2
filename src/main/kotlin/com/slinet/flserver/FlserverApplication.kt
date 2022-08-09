@@ -7,5 +7,9 @@ import org.springframework.boot.runApplication
 class FlserverApplication
 
 fun main(args: Array<String>) {
-	runApplication<FlserverApplication>(*args)
+    runApplication<FlserverApplication>(*args)
+    val socketServer = SocketServer()
+    socketServer.startServer(12345)
+    ModelAggregation.createModel()
+    ModelAggregation.startWebUI()
 }

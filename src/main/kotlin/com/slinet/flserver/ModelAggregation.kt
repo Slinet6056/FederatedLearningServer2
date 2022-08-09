@@ -50,7 +50,7 @@ object ModelAggregation {
 
     fun startWebUI() {
         uiServer = UIServer.getInstance()
-        statsStorage = FileStatsStorage(File("src/main/resources/stats/stats.dl4j"))
+        statsStorage = FileStatsStorage(File("res/stats.dl4j"))
         model.setListeners(StatsListener(statsStorage, 1))
         uiServer.attach(statsStorage)
     }
@@ -154,7 +154,7 @@ object ModelAggregation {
         }
 
         try {
-            ModelSerializer.writeModel(originModel, "src/main/resources/model/trained_model.zip", true)
+            ModelSerializer.writeModel(originModel, "res/model/trained_model.zip", true)
             Utils.log("Aggregated model saved")
         } catch (e: Exception) {
             Utils.log(e.message.toString())

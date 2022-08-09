@@ -34,5 +34,5 @@ build/
 .vscode/
 
 ### Model ###
-src/main/resources/model/*.zip
-src/main/resources/stats/*
+res/model/*.zip
+res/stats.dl4j*

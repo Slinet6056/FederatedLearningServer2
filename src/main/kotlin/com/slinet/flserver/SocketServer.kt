@@ -117,7 +117,7 @@ class SocketServer {
                 1 -> try {
                     Utils.log("Receive socket get connected from $ipAddress")
                     val inputStream = socket.getInputStream()
-                    val filePath = "src/main/resources/model/received${Instant.now().epochSecond}.zip"
+                    val filePath = "res/model/received${Instant.now().epochSecond}.zip"
                     val file = File(filePath)
                     val fileOutputStream = FileOutputStream(file, false)
                     val buffer = ByteArray(1024)
@@ -132,7 +132,7 @@ class SocketServer {
 
                     if (autoMode) {
                         ModelAggregation.aggregation(3, 0.3)
-                        sendFile("src/main/resources/model/trained_model.zip")
+                        sendFile("res/model/trained_model.zip")
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

@@ -3,15 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="10">
-    <title>信息</title>
+    <title>客户端连接列表</title>
+    <style>
+        table {
+            width: 90%;
+            background: #ccc;
+            margin: 10px auto;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background: #eee;
+            font-weight: normal;
+        }
+
+        tr {
+            background: #fff;
+        }
+    </style>
 </head>
 <body>
-<div th:each="connection:${connectionList}">
-    <span>IP地址</span>
-    <span th:text="${connection.ipAddress}"></span>
-    <br>
-    <span>最后连接</span>
-    <span th:text="${connection.lastConnection}"></span>
-</div>
+<table>
+    <tr>
+        <th>序号</th>
+        <th>IP地址</th>
+        <th>最后连接时间</th>
+    </tr>
+    <th:block th:each="connection,iter:${connectionList}">
+        <tr>
+            <td th:text="${iter.index + 1}"></td>
+            <td th:text="${connection.ipAddress}"></td>
+            <td th:text="${connection.lastConnection}"></td>
+        </tr>
+    </th:block>
+</table>
 </body>
 </html>

@@ -8,17 +8,21 @@ import java.time.Instant
 import kotlin.concurrent.thread
 
 class SocketServer {
-    private var thread: Thread? = null
+    private var mainThread: Thread? = null
+    private var checkConnectionThread = CheckConnection()
     private var server: ServerSocket? = null
     private var running = false
     private var sendFilePath: String? = null
-    private val socketList = ArrayList<SocketThread>()
     private val ipAddressReceiveFile = ArrayList<String>()
     private val ipAddressSendFile = ArrayList<String>()
     var autoMode = true
 
+    companion object {
+        val connectionList = ArrayList<Connection>()
+    }
+
     fun startServer(port: Int) {
-        if (thread != null) {
+        if (mainThread != null) {
             Utils.log("Server has already started")
             return
         }
@@ -30,7 +34,7 @@ class SocketServer {
         }
         Utils.log("Server started on port $port")
         running = true
-        thread = Thread {
+        mainThread = Thread {
             while (running) {
                 try {
                     Utils.log("New socket waiting for client")
@@ -48,7 +52,9 @@ class SocketServer {
 
                         else -> {
                             SocketThread(socket).apply {
-                                socketList.add(this)
+                                val connection = Connection(this, ipAddress)
+                                connectionList.add(connection)
+                                this.connection = connection
                                 start()
                             }
                         }
@@ -59,11 +65,12 @@ class SocketServer {
                 }
             }
         }
-        thread!!.start()
+        mainThread!!.start()
+        checkConnectionThread.start()
     }
 
     fun stopServer() {
-        if (thread == null) {
+        if (mainThread == null) {
             Utils.log("Server has already stopped")
             return
         }
@@ -74,11 +81,12 @@ class SocketServer {
         } catch (e: Exception) {
             Utils.log(e.message.toString())
         }
-        thread = null
+        mainThread = null
     }
 
     inner class SocketThread(private val socket: Socket, private val type: Int = 0) : Thread() {
 
+        var connection: Connection? = null
         var ipAddress: String = with(socket.remoteSocketAddress.toString()) { substring(1, indexOf(':')) }
         var output: PrintWriter? = null
 
@@ -97,8 +105,14 @@ class SocketServer {
                             val json = JSONObject(stringData)
                             when (json.getInt("statusCode")) {
                                 -1 -> break
+                                0 -> {
+                                    checkConnectionThread.responseIp.add(ipAddress)
+                                    connection?.touch()
+                                }
+
                                 1 -> {
                                     ipAddressReceiveFile.add(ipAddress)
+                                    connection?.touch()
                                     Utils.log("Waiting to receive file from $ipAddress")
                                 }
                             }
@@ -162,7 +176,8 @@ class SocketServer {
     fun sendFile(filePath: String) {
         sendFilePath = filePath
         thread {
-            for (socket in socketList) {
+            for (connection in connectionList) {
+                val socket = connection.socketThread
                 try {
                     val msg = """{"statusCode":1}"""
                     socket.output?.println(msg)
@@ -170,6 +185,33 @@ class SocketServer {
                     Utils.log("Request to send file to ${socket.ipAddress}")
                 } catch (e: Exception) {
                     Utils.log(e.message.toString())
+                }
+            }
+        }
+    }
+
+    inner class CheckConnection() : Thread() {
+        val responseIp = ArrayList<String>()
+        override fun run() {
+            while (running) {
+                responseIp.clear()
+                val connectionList = ArrayList<Connection>(SocketServer.connectionList)
+                for (connection in connectionList) {
+                    val socket = connection.socketThread
+                    try {
+                        val msg = """{"statusCode":0}"""
+                        socket.output?.println(msg)
+                        Utils.log("Check connection to ${socket.ipAddress}")
+                    } catch (e: Exception) {
+                        Utils.log(e.message.toString())
+                    }
+                }
+                sleep(30000)
+                for (connection in connectionList) {
+                    if (connection.ipAddress !in responseIp) {
+                        Utils.log("${connection.ipAddress} disconnected")
+                        SocketServer.connectionList.remove(connection)
+                    }
                 }
             }
         }

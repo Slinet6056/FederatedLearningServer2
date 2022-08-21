@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="10">
+    <title>信息</title>
+</head>
+<body>
+<div th:each="connection:${connectionList}">
+    <span>IP地址</span>
+    <span th:text="${connection.ipAddress}"></span>
+    <br>
+    <span>最后连接</span>
+    <span th:text="${connection.lastConnection}"></span>
+</div>
+</body>
+</html>

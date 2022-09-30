@@ -106,8 +106,10 @@ class SocketServer {
                             when (json.getInt("statusCode")) {
                                 -1 -> break
                                 0 -> {
+                                    val deviceName = json.getString("deviceName")
+                                    val deviceModel = json.getString("deviceModel")
                                     checkConnectionThread.responseIp.add(ipAddress)
-                                    connection?.touch()
+                                    connection?.touch(deviceName, deviceModel)
                                 }
 
                                 1 -> {
@@ -190,7 +192,7 @@ class SocketServer {
         }
     }
 
-    inner class CheckConnection() : Thread() {
+    inner class CheckConnection : Thread() {
         val responseIp = ArrayList<String>()
         override fun run() {
             while (running) {

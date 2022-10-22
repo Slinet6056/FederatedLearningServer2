@@ -110,11 +110,13 @@ class SocketServer {
                                     val deviceFingerprint = json.getString("deviceFingerprint")
                                     checkConnectionThread.responseIp.add(ipAddress)
                                     connection?.touch(deviceName, deviceFingerprint)
+                                    connection?.let { DeviceManager.touch(it.deviceFingerprint) }
                                 }
 
                                 1 -> {
                                     ipAddressReceiveFile.add(ipAddress)
                                     connection?.touch()
+                                    connection?.let { DeviceManager.receive(it.deviceFingerprint) }
                                     Utils.log("Waiting to receive file from $ipAddress")
                                 }
                             }
@@ -146,6 +148,8 @@ class SocketServer {
                     ModelAggregation.filePathList.add(filePath)
                     Utils.log("Received file from $ipAddress, socket closed")
 
+                    connection?.touch()
+
                     if (autoMode) {
                         ModelAggregation.aggregation(3, 0.3)
                         sendFile("res/model/trained_model.zip")
@@ -168,6 +172,8 @@ class SocketServer {
                     fileInputStream.close()
                     outputData.close()
                     Utils.log("Sent file to $ipAddress, socket closed")
+
+                    connection?.touch()
                 } catch (e: Exception) {
                     Utils.log(e.message.toString())
                 }

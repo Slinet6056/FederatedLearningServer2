@@ -107,9 +107,9 @@ class SocketServer {
                                 -1 -> break
                                 0 -> {
                                     val deviceName = json.getString("deviceName")
-                                    val deviceModel = json.getString("deviceModel")
+                                    val deviceFingerprint = json.getString("deviceFingerprint")
                                     checkConnectionThread.responseIp.add(ipAddress)
-                                    connection?.touch(deviceName, deviceModel)
+                                    connection?.touch(deviceName, deviceFingerprint)
                                 }
 
                                 1 -> {

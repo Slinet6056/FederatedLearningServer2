@@ -7,7 +7,7 @@ class Connection(
     val socketThread: SocketServer.SocketThread,
     val ipAddress: String,
     var deviceName: String = "",
-    var deviceModel: String = ""
+    var deviceFingerprint: String = ""
 ) {
     lateinit var lastConnection: String
 
@@ -15,14 +15,14 @@ class Connection(
         touch()
     }
 
-    fun touch(deviceName: String = "", deviceModel: String = "") {
+    fun touch(deviceName: String = "", deviceFingerprint: String = "") {
         lastConnection = with(SimpleDateFormat()) {
             applyPattern("yyyy-MM-dd HH:mm:ss")
             format(Date())
         }
         if (deviceName.isNotEmpty()) {
             this.deviceName = deviceName
-            this.deviceModel = deviceModel
+            this.deviceFingerprint = deviceFingerprint
         }
     }
 }

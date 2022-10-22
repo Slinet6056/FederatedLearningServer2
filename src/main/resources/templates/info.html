@@ -35,7 +35,7 @@
         <th>序号</th>
         <th>IP地址</th>
         <th>设备名称</th>
-        <th>设备型号</th>
+        <th>设备指纹</th>
         <th>最后连接时间</th>
     </tr>
     <th:block th:each="connection,iter:${connectionList}">
@@ -43,7 +43,7 @@
             <td th:text="${iter.index + 1}"></td>
             <td th:text="${connection.ipAddress}"></td>
             <td th:text="${connection.deviceName}"></td>
-            <td th:text="${connection.deviceModel}"></td>
+            <td th:text="${connection.deviceFingerprint}"></td>
             <td th:text="${connection.lastConnection}"></td>
         </tr>
     </th:block>

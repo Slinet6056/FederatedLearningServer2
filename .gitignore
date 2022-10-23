@@ -33,6 +33,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### Model ###
+### Resources ###
 res/model/*.zip
+res/database/*.sqlite3
 res/stats.dl4j*

@@ -21,6 +21,8 @@ fun main(args: Array<String>) {
         }
     }
 
+    DeviceManager.connectDatabase()
+
     val socketServer = SocketServer()
     socketServer.startServer(12345)
     ModelAggregation.createModel()

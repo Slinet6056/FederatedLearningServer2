@@ -110,13 +110,15 @@ class SocketServer {
                                     val deviceFingerprint = json.getString("deviceFingerprint")
                                     checkConnectionThread.responseIp.add(ipAddress)
                                     connection?.touch(deviceName, deviceFingerprint)
-                                    connection?.let { DeviceManager.touch(it.deviceFingerprint) }
                                 }
 
                                 1 -> {
+                                    val trainingDuration = json.getDouble("trainingDuration")
+                                    val deviceName = json.getString("deviceName")
+                                    val deviceFingerprint = json.getString("deviceFingerprint")
+                                    DeviceManager.receive(deviceName, deviceFingerprint, trainingDuration)
                                     ipAddressReceiveFile.add(ipAddress)
                                     connection?.touch()
-                                    connection?.let { DeviceManager.receive(it.deviceFingerprint) }
                                     Utils.log("Waiting to receive file from $ipAddress")
                                 }
                             }

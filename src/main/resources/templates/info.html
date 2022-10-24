@@ -5,6 +5,11 @@
     <meta http-equiv="refresh" content="10">
     <title>客户端连接列表</title>
     <style>
+        #device-number {
+            width: 90%;
+            margin: auto;
+        }
+
         table {
             width: 90%;
             background: #ccc;
@@ -30,21 +35,26 @@
     </style>
 </head>
 <body>
+<div id="device-number">
+    <h3>当前在线客户端数量：<span th:text="${deviceNumber}"/></h3>
+</div>
 <table>
     <tr>
         <th>序号</th>
         <th>IP地址</th>
         <th>设备名称</th>
-        <th>设备指纹</th>
         <th>最后连接时间</th>
+        <th>训练详情</th>
     </tr>
     <th:block th:each="connection,iter:${connectionList}">
         <tr>
-            <td th:text="${iter.index + 1}"></td>
-            <td th:text="${connection.ipAddress}"></td>
-            <td th:text="${connection.deviceName}"></td>
-            <td th:text="${connection.deviceFingerprint}"></td>
-            <td th:text="${connection.lastConnection}"></td>
+            <td th:text="${iter.index + 1}"/>
+            <td th:text="${connection.ipAddress}"/>
+            <td th:text="${connection.deviceName}"/>
+            <td th:text="${connection.lastConnection}"/>
+            <td>
+                <a th:href="@{'/detail'(fingerprint=${encodeBash64.invoke(connection.deviceFingerprint)})}">查看</a>
+            </td>
         </tr>
     </th:block>
 </table>

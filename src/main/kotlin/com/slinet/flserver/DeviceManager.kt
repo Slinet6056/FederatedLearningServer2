@@ -5,6 +5,15 @@ import java.sql.DriverManager
 
 object DeviceManager {
 
+    data class Detail(
+        val id: Int,
+        val deviceName: String,
+        val fingerprint: String,
+        val trainingTimes: Int,
+        val averageDuration: Double,
+        val totalDuration: Double
+    )
+
     private var connection: Connection? = null
 
     fun connectDatabase() {
@@ -46,7 +55,7 @@ object DeviceManager {
 
     fun receive(deviceName: String, fingerprint: String, duration: Double) {
         if (duration == -1.0) return
-        checkDevice(deviceName, fingerprint)
+        checkDevice(fingerprint, deviceName, true)
         try {
             val statement = connection!!.createStatement()
             val resultSet = statement.executeQuery("SELECT * FROM device where fingerprint = \'$fingerprint\'")
@@ -64,7 +73,23 @@ object DeviceManager {
         }
     }
 
-    private fun checkDevice(deviceName: String, fingerprint: String) {
+    fun getDetails(fingerprint: String): Detail? {
+        if (!checkDevice(fingerprint)) return null
+        val statement = connection!!.createStatement()
+        val resultSet = statement.executeQuery("SELECT * FROM device where fingerprint = \'$fingerprint\'")
+        return with(resultSet) {
+            Detail(
+                getInt("id"),
+                getString("device_name"),
+                getString("fingerprint"),
+                getInt("training_times"),
+                getDouble("average_duration"),
+                getDouble("total_duration")
+            )
+        }
+    }
+
+    fun checkDevice(fingerprint: String, deviceName: String = "", autoCreate: Boolean = false): Boolean {
         try {
             val statement = connection!!.createStatement()
             val resultSet = statement.executeQuery("SELECT * FROM device where fingerprint = '$fingerprint'")
@@ -73,12 +98,12 @@ object DeviceManager {
             if (rowCnt == 0) {
                 statement.executeUpdate("INSERT INTO device (device_name, fingerprint) VALUES ('$deviceName', '$fingerprint')")
                 Utils.log("Device $fingerprint does not exist in database, added")
-            } else {
-                Utils.log("Device $fingerprint exist in database")
+                return false
             }
         } catch (e: Exception) {
             Utils.log(e.message.toString())
         }
+        return true
     }
 
     fun closeDatabase() {

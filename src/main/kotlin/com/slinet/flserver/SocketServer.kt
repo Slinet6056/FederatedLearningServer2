@@ -110,6 +110,7 @@ class SocketServer {
                                     val deviceFingerprint = json.getString("deviceFingerprint")
                                     checkConnectionThread.responseIp.add(ipAddress)
                                     connection?.touch(deviceName, deviceFingerprint)
+                                    DeviceManager.checkDevice(deviceFingerprint, deviceName, true)
                                 }
 
                                 1 -> {

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>详细信息</title>
+    <style>
+        #returnBtn {
+            width: 90%;
+            margin: auto;
+        }
+
+        table {
+            width: 90%;
+            background: #ccc;
+            margin: 10px auto;
+            border-collapse: collapse;
+        }
+
+        td {
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        .title {
+            background: #eee;
+            font-weight: normal;
+        }
+
+        .content {
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+<div id="returnBtn">
+    <h3><a th:href="@{'/info'}">←返回</a></h3>
+</div>
+<table>
+    <tr>
+        <td class="title">数据库ID</td>
+        <td class="content" th:text="${id}"/>
+    </tr>
+    <tr>
+        <td class="title">设备名称</td>
+        <td class="content" th:text="${deviceName}"/>
+    </tr>
+    <tr>
+        <td class="title">设备指纹</td>
+        <td class="content" th:text="${fingerPrint}"/>
+    </tr>
+    <tr>
+        <td class="title">训练次数</td>
+        <td class="content" th:text="${trainingTimes}"/>
+    </tr>
+    <tr>
+        <td class="title">平均训练时长</td>
+        <td class="content" th:text="${averageDuration}"/>
+    </tr>
+    <tr>
+        <td class="title">总训练时长</td>
+        <td class="content" th:text="${totalDuration}"/>
+    </tr>
+</table>
+</body>
+</html>

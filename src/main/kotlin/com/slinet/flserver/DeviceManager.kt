@@ -55,7 +55,7 @@ object DeviceManager {
 
     fun receive(deviceName: String, fingerprint: String, duration: Double) {
         if (duration == -1.0) return
-        checkDevice(fingerprint, deviceName, true)
+        checkDevice(fingerprint, deviceName)
         try {
             val statement = connection!!.createStatement()
             val resultSet = statement.executeQuery("SELECT * FROM device where fingerprint = \'$fingerprint\'")
@@ -89,7 +89,7 @@ object DeviceManager {
         }
     }
 
-    fun checkDevice(fingerprint: String, deviceName: String = "", autoCreate: Boolean = false): Boolean {
+    fun checkDevice(fingerprint: String, deviceName: String = ""): Boolean {
         try {
             val statement = connection!!.createStatement()
             val resultSet = statement.executeQuery("SELECT * FROM device where fingerprint = '$fingerprint'")

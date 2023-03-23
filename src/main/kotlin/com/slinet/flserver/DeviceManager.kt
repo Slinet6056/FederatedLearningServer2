@@ -3,8 +3,10 @@ package com.slinet.flserver
 import java.sql.Connection
 import java.sql.DriverManager
 
+//用于设备连接信息数据库的管理
 object DeviceManager {
 
+    //一个数据类，用于存储设备的详细信息
     data class Detail(
         val id: Int,
         val deviceName: String,
@@ -16,6 +18,7 @@ object DeviceManager {
 
     private var connection: Connection? = null
 
+    //连接数据库，如果数据库不存在则创建
     fun connectDatabase() {
         try {
             Class.forName("org.sqlite.JDBC")
@@ -53,6 +56,7 @@ object DeviceManager {
         Utils.log("Opened database successfully")
     }
 
+    //接收到设备训练后的模型，更新数据库中训练次数与时长信息
     fun receive(deviceName: String, fingerprint: String, duration: Double) {
         if (duration == -1.0) return
         checkDevice(fingerprint, deviceName)
@@ -73,6 +77,7 @@ object DeviceManager {
         }
     }
 
+    //获取数据库中设备的详细信息
     fun getDetails(fingerprint: String): Detail? {
         if (!checkDevice(fingerprint)) return null
         val statement = connection!!.createStatement()
@@ -89,6 +94,7 @@ object DeviceManager {
         }
     }
 
+    //检查设备是否已经存在于数据库中，如果不存在则添加
     fun checkDevice(fingerprint: String, deviceName: String = ""): Boolean {
         try {
             val statement = connection!!.createStatement()
@@ -106,6 +112,7 @@ object DeviceManager {
         return true
     }
 
+    //关闭数据库连接，没有用到捏
     fun closeDatabase() {
         connection?.close()
         Utils.log("Database closed")

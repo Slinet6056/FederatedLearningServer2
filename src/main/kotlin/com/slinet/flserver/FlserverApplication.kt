@@ -10,6 +10,7 @@ class FlserverApplication
 fun main(args: Array<String>) {
     runApplication<FlserverApplication>(*args)
 
+    //创建模型存储目录
     val path = File("res/model")
     if (path.isDirectory) {
         Utils.log("Resource directory already exists")
@@ -21,10 +22,12 @@ fun main(args: Array<String>) {
         }
     }
 
+    //连接数据库
     DeviceManager.connectDatabase()
 
+    //启动Socket服务器
     val socketServer = SocketServer()
-    socketServer.startServer(12345)
+    socketServer.startServer(12345)     //可以在这里修改端口号
     ModelAggregation.createModel()
     ModelAggregation.startWebUI()
 }

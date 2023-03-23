@@ -7,6 +7,7 @@ import java.net.Socket
 import java.time.Instant
 import kotlin.concurrent.thread
 
+//Socket服务器
 class SocketServer {
     private var mainThread: Thread? = null
     private var checkConnectionThread = CheckConnection()
@@ -17,10 +18,12 @@ class SocketServer {
     private val ipAddressSendFile = ArrayList<String>()
     var autoMode = true
 
+    //用于存储客户端连接信息的列表
     companion object {
         val connectionList = ArrayList<Connection>()
     }
 
+    //启动Socket服务器
     fun startServer(port: Int) {
         if (mainThread != null) {
             Utils.log("Server has already started")
@@ -34,11 +37,14 @@ class SocketServer {
         }
         Utils.log("Server started on port $port")
         running = true
+
         mainThread = Thread {
             while (running) {
                 try {
                     Utils.log("New socket waiting for client")
                     val socket = server!!.accept()
+
+                    //根据客户端IP地址判断是接收文件还是发送文件，还是新的客户端连接
                     when (val ipAddress = with(socket.remoteSocketAddress.toString()) { substring(1, indexOf(':')) }) {
                         in ipAddressReceiveFile -> {
                             SocketThread(socket, 1).start()
@@ -69,6 +75,8 @@ class SocketServer {
         checkConnectionThread.start()
     }
 
+    //停止Socket服务器，没用到，现在关闭服务器是直接关闭程序
+    //其实应该是要先通知客户端，并且删除res/model中的模型文件的
     fun stopServer() {
         if (mainThread == null) {
             Utils.log("Server has already stopped")
@@ -84,6 +92,8 @@ class SocketServer {
         mainThread = null
     }
 
+    //Socket连接，每个连接都在一个单独的线程中运行
+    //type=0表示新的客户端连接，type=1表示接收文件，type=2表示发送文件
     inner class SocketThread(private val socket: Socket, private val type: Int = 0) : Thread() {
 
         var connection: Connection? = null
@@ -92,6 +102,7 @@ class SocketServer {
 
         override fun run() {
             when (type) {
+                //新的客户端连接
                 0 -> try {
                     Utils.log("Socket get connected from $ipAddress")
                     val input = BufferedReader(InputStreamReader(socket.getInputStream()))
@@ -102,6 +113,8 @@ class SocketServer {
                         if (stringData == null) continue
                         try {
                             Utils.log("Received from $ipAddress: $stringData")
+
+                            //解析JSON数据，根据statusCode的值判断是否准备接收文件
                             val json = JSONObject(stringData)
                             when (json.getInt("statusCode")) {
                                 -1 -> break
@@ -135,6 +148,7 @@ class SocketServer {
                     Utils.log(e.message.toString())
                 }
 
+                //接收文件，接收到文件后会自动聚合模型并发送给客户端
                 1 -> try {
                     Utils.log("Receive socket get connected from $ipAddress")
                     val inputStream = socket.getInputStream()
@@ -153,6 +167,7 @@ class SocketServer {
 
                     connection?.touch()
 
+                    //聚合模型并发送给客户端
                     if (autoMode) {
                         ModelAggregation.aggregation(3, 0.3)
                         sendFile("res/model/trained_model.zip")
@@ -161,6 +176,7 @@ class SocketServer {
                     e.printStackTrace()
                 }
 
+                //发送文件
                 2 -> try {
                     Utils.log("Send socket get connected from $ipAddress")
                     if (sendFilePath == null) return
@@ -184,6 +200,7 @@ class SocketServer {
         }
     }
 
+    //请求客户端接收文件
     fun sendFile(filePath: String) {
         sendFilePath = filePath
         thread {
@@ -201,6 +218,7 @@ class SocketServer {
         }
     }
 
+    //检查客户端是否还在线，30秒后没有响应则认为客户端已经断开连接
     inner class CheckConnection : Thread() {
         val responseIp = ArrayList<String>()
         override fun run() {

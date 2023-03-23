@@ -17,6 +17,11 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 import java.io.File
 import kotlin.concurrent.thread
 
+//用于聚合多个设备的模型
+//在这里创建了一个与客户端相同的模型，用于聚合多个设备的模型
+//并在模型聚合后进行了一次训练，用于更新显示训练信息的网页
+//使用的数据为TrainingData类中的irisData和labelData
+//目前这个数据跟客户端用的数据是一样的，但是在实际应用中，可以为其他的数据，用于评估模型的准确性
 object ModelAggregation {
     val filePathList = ArrayList<String>()
     private lateinit var model: MultiLayerNetwork
@@ -24,8 +29,9 @@ object ModelAggregation {
     private lateinit var statsStorage: StatsStorage
     private var trainingData: DataSet
 
+    //初始化训练数据
     init {
-        val row = 150
+        val row = TrainingData.irisData.size / 4
         val col = 4
         val irisMatrix = Array(row) { DoubleArray(col) }
         var i = 0
@@ -34,7 +40,7 @@ object ModelAggregation {
                 irisMatrix[r][c] = TrainingData.irisData[i++]
             }
         }
-        val rowLabel = 150
+        val rowLabel = TrainingData.labelData.size / 3
         val colLabel = 3
         val twodimLabel = Array(rowLabel) { DoubleArray(colLabel) }
         i = 0
@@ -48,6 +54,8 @@ object ModelAggregation {
         trainingData = DataSet(trainingIn, trainingOut)
     }
 
+    //启动DL4J自带的网页界面，使用文件记录训练信息
+    //老师一直想把主界面那个图像图例中的score改成loss，但我也不会（ ﾟ∀｡）
     fun startWebUI() {
         uiServer = UIServer.getInstance()
         statsStorage = FileStatsStorage(File("res/stats.dl4j"))
@@ -55,6 +63,7 @@ object ModelAggregation {
         uiServer.attach(statsStorage)
     }
 
+    //创建模型
     fun createModel() {
         val inputLayer = DenseLayer.Builder()
             .nIn(4)
@@ -94,12 +103,17 @@ object ModelAggregation {
         Utils.log("Model created")
     }
 
+    //模型聚合
     fun aggregation(layer: Int, alpha: Double) {
         if (filePathList.isEmpty()) return
         val originModel = model
         val filePathList = ArrayList(filePathList)
         ModelAggregation.filePathList.clear()
 
+        //计算模型参数的平均值，使用alpha控制旧的模型占聚合以后模型的权重
+        //其实这里的计算方式有点问题，理论上来说假如有三个新的模型要聚合，应该先计算出三个模型的平均值，然后再与旧的模型进行聚合
+        //但是这里的计算方式是用循环计算，先计算出旧的模型与第一个新的模型的平均值，然后再计算出这个平均值与第二个新的模型的平均值，以此类推
+        //但目前每接收到一个新的模型，就会立即进行一次聚合，所以在设备数量不多的情况下，这种计算方式也是可以的
         for (i in 0 until layer) {
             var paramTable = originModel.paramTable()
             var weights = paramTable[String.format("%d_W", i)]!!
@@ -129,6 +143,7 @@ object ModelAggregation {
 
         Utils.log("Successfully aggregated ${filePathList.size} models")
 
+        //DL4J的网页界面似乎只在训练后更新，所以这里只好进行一次训练
         thread {
             try {
                 val paramTable = originModel.paramTable()
@@ -142,6 +157,7 @@ object ModelAggregation {
             }
         }
 
+        //删除已经聚合的模型文件
         thread {
             for (filePath in filePathList) {
                 try {
@@ -153,6 +169,7 @@ object ModelAggregation {
             }
         }
 
+        //保存聚合后的模型
         try {
             ModelSerializer.writeModel(originModel, "res/model/trained_model.zip", true)
             Utils.log("Aggregated model saved")
